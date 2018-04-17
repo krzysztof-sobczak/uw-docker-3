@@ -3,27 +3,24 @@ version: '3.2'
 services:
   nginx:
     image: nginx:1.13-alpine
-    container_name: uw_nginx
     ports:
       - 80:80/tcp
     volumes:
-      - ./nginx:/etc/nginx/conf.d
-      - ./src:/var/www/uw
+      - ./../../nginx:/etc/nginx/conf.d
+      - ./public:/var/www/uw/src/public
     depends_on:
       - php
     restart: unless-stopped
 
   php:
     build:
-      context: ./php
-    container_name: uw_php
+      context: ./../../php
     volumes:
-      - ./src:/var/www/uw/src
+      - ./public:/var/www/uw/src/public
       - ./vendor:/var/www/uw/vendor
     depends_on:
       - redis
 
   redis:
     image: redis:4.0.2
-    container_name: uw_redis
     restart: unless-stopped
