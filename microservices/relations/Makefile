@@ -1,6 +1,5 @@
 build:
-	docker-compose build --pull
-	docker-compose pull
+	docker-compose build
 	docker run --rm --volume $$PWD:/app composer install -n
 
 start:
