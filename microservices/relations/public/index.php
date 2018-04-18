@@ -8,43 +8,50 @@ require __DIR__.'/../../vendor/autoload.php';
 
 $request = Request::createFromGlobals();
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
-    $r->addRoute('GET', '/users', function() {});
-    $r->addRoute('GET', '/user/{id:[a-z]+}', function(Request $request, $id) {
-        $hitCount = getRedis()->incr("user/hit/$id");
-        $userData = getRedis()->get("user/$id") ?: null;
-        if (null !== $userData) {
-            $userData = json_decode($userData, true);
+    $r->addRoute('GET', '/relations/{id:[a-z]+}', function(Request $request, $id) {
+        $relations = getRedis()->sMembers("relations/$id");
+
+        $relationsData = [];
+        foreach($relations as $relatedUserId) {
+            $relationsData[] = sendRequest('GET', sprintf('users_app/user/%s',$relatedUserId));
         }
 
-        return new JsonResponse([
-            'id' => $id,
-            'data' => $userData,
-            'hits' => $hitCount,
-        ]);
+        return new JsonResponse($relationsData);
     });
-    $r->addRoute('PUT', '/user/{id:[a-z]+}', function(Request $request, $id) {
-        $userData = [
-            'name' => $request->get('name'),
-        ];
-        $userPassword = password_hash($request->get('password'), PASSWORD_DEFAULT);
-        getRedis()->set("user/$id", json_encode($userData));
-        getRedis()->set("user/password/$id", $userPassword);
+    $r->addRoute('PUT', '/relations/{id:[a-z]+}', function(Request $request, $id) {
+        $relatedUserId = $request->get('related_user_id');
+        getRedis()->sAdd("relations/$id", $relatedUserId);
+        $relations = getRedis()->sMembers("relations/$id");
 
-        return new JsonResponse([
-            'id' => $id,
-        ]);
-    });
-    $r->addRoute('POST', '/auth/login', function(Request $request) {
-        $id = $request->get('username');
-        $password = $request->get('password');
-        $userPassword = getRedis()->get("user/password/$id");
-        if (!is_string($userPassword)) {
-            return new JsonResponse(false);
-        }
-        $passwordValid = password_verify($password, $userPassword);
-        return new JsonResponse($passwordValid);
+        return new JsonResponse($relations);
     });
 });
+
+function sendRequest($method, $url) {
+
+    $curl = curl_init();
+
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => $url,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_CUSTOMREQUEST => $method,
+    ));
+
+    $response = curl_exec($curl);
+    $err = curl_error($curl);
+
+    curl_close($curl);
+
+    if ($err) {
+        return ['error' => [
+            'url' => $url,
+            'message' => $err
+        ]];
+    } else {
+        return json_decode($response, true);
+    }
+
+}
 
 function getRedis() {
     static $redis;

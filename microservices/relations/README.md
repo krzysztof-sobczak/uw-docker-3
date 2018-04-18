@@ -4,19 +4,14 @@
 make
 make start
 
-curl -X PUT -d'name=Lukasz&password=abcd' localhost/user/lukasz
-{"id":"lukasz"}
+curl -X PUT -d'related_user_id=kuba' localhost:8002/user/lukasz
+["lukasz"]
 
-curl -X POST -d'username=lukasz&password=abcd' localhost/auth/login
-true
+curl -X GET localhost:8002/relations/lukasz
+{"id":"lukasz","data":{"name":"lach"},"hits":3}[
 ```
 
 ## Dependencies
-
-```bash
-docker run --rm --volume $PWD:/app composer require symfony/http-foundation
-docker run --rm --volume $PWD:/app composer require nikic/fast-route
-```
 
 * https://symfony.com/doc/current/components/http_foundation.html
 * https://github.com/nikic/FastRoute

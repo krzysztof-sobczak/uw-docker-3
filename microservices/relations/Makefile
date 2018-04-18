@@ -19,3 +19,6 @@ rm:
 
 ps:
 	docker-compose ps
+
+deploy:
+	docker stack deploy -c docker-compose.yml relations

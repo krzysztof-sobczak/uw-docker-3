@@ -1,26 +1,34 @@
 version: '3.2'
 
 services:
-  nginx:
+  app:
     image: nginx:1.13-alpine
     ports:
-      - 80:80/tcp
+      - 8002:80/tcp
     volumes:
-      - ./../../nginx:/etc/nginx/conf.d
+      - ./nginx:/etc/nginx/conf.d
       - ./public:/var/www/uw/src/public
-    depends_on:
-      - php
-    restart: unless-stopped
+    networks:
+      - uw-internal-1
+      - relations-1
 
-  php:
-    build:
-      context: ./../../php
+  relations-php:
+    image: uw-php
     volumes:
       - ./public:/var/www/uw/src/public
       - ./vendor:/var/www/uw/vendor
-    depends_on:
-      - redis
+    ports:
+      - 9000
+    networks:
+      - uw-internal-1
+      - relations-1
 
   redis:
     image: redis:4.0.2
-    restart: unless-stopped
+    networks:
+      - relations-1
+
+networks:
+    uw-internal-1:
+      external: true
+    relations-1:

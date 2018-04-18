@@ -12,13 +12,13 @@ stop:
 
 restart: stop start
 
-respawn: kill start
-
-kill:
-	docker-compose kill
+respawn: rm start
 
 rm:
-	docker-compose rm -f
+	docker-compose down -v --remove-orphans
 
 ps:
 	docker-compose ps
+
+deploy:
+	docker stack deploy -c docker-compose.yml users
