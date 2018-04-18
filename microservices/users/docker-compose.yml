@@ -8,6 +8,8 @@ services:
     volumes:
       - ./nginx:/etc/nginx/conf.d
       - ./public:/var/www/uw/src/public
+    depends_on:
+      - users-php
     networks:
       - uw-internal-1
       - users-1
@@ -19,6 +21,8 @@ services:
       - ./vendor:/var/www/uw/vendor
     ports:
       - 9000
+    depends_on:
+      - redis
     networks:
       - uw-internal-1
       - users-1

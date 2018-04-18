@@ -11,6 +11,8 @@ services:
     networks:
       - uw-internal-1
       - relations-1
+    depends_on:
+      - relations-php
 
   relations-php:
     image: uw-php
@@ -19,6 +21,8 @@ services:
       - ./vendor:/var/www/uw/vendor
     ports:
       - 9000
+    depends_on:
+      - redis
     networks:
       - uw-internal-1
       - relations-1
