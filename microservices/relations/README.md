@@ -4,7 +4,7 @@
 make
 make start
 
-curl -X PUT -d'related_user_id=kuba' localhost:8002/user/lukasz
+curl -X PUT -d'related_user_id=kuba' localhost:8002/relations/lukasz
 ["lukasz"]
 
 curl -X GET localhost:8002/relations/lukasz
