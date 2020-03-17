@@ -13,6 +13,7 @@ services:
     networks:
       - uw-internal-1
       - users-1
+    container_name: users_app
 
   users-php:
     image: uw-php
